@@ -7,7 +7,7 @@ from scipy.io import readsav
 from astropy.time import Time
 
 # Single function that takes user's start time, stop time and folder of datasets as arguments
-def time_visual(user_start, user_end, folder):
+def abs_display(user_start, user_end, folder):
 
 # Empty NumPy arrays outside of loop that are defined for later use
     mega_x_data = np.array([])
@@ -112,3 +112,13 @@ def time_visual(user_start, user_end, folder):
     # Displays the tplot graph:
     return tplot(["FOM"])
 
+# User-input for abs files through command prompt:
+vars = input('Select command: ')
+eval(vars)
+
+# sample data for testing
+# abs_display("2022-07-25 08:00:00", "2022-07-28 16:00:00", "2022")
+
+# Create a command-line prompt to ask user: operation, trange (start and end), fom (height)
+# Create a fucntion that can add a bar (given a specified time range)
+# Create a function that can delete a bar (given a specified time range)
