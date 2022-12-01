@@ -87,5 +87,6 @@ def visual(file_path):
     return tplot(['FOM'])
 
 
+
 # Steps to display data given a trange
 # Write a for loop which takes loops through each file in the directory and concatenates the arrays presented together

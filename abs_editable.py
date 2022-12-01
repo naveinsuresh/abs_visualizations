@@ -5,9 +5,11 @@ import numpy as np
 from pytplot import tplot
 from scipy.io import readsav
 from astropy.time import Time
+import matplotlib.pyplot as plt
+
 
 # Single function that takes user's start time, stop time and folder of datasets as arguments
-def abs_display(user_start, user_end, folder):
+def abs_display(user_start, user_end, folder, command = None, new_start = None, new_stop = None, fom = None):
 
 # Empty NumPy arrays outside of loop that are defined for later use
     mega_x_data = np.array([])
@@ -87,10 +89,9 @@ def abs_display(user_start, user_end, folder):
         mega_x_data = np.concatenate((mega_x_data, up_unix_x_data))
         mega_y_data = np.concatenate((mega_y_data, up_new_y_data))
 
-    # Converts the user's start and stop values ot the "UTC" format
+    # Converts the user's start and stop values to the "UTC" format
     change1 = (Time(user_start, scale='utc')).unix
     change2 = (Time(user_end, scale='utc')).unix
-    
 
     # Narrows down to the required data needed based on start/stop time constraints
     for k in mega_x_data:
@@ -99,8 +100,34 @@ def abs_display(user_start, user_end, folder):
             value = np.where(mega_x_data == k)[0][0]
             nouvelle_y = np.append(nouvelle_y, mega_y_data[value])
             
-    # Corrects small error by moving first element of y_data to the end of teh array
+    # Corrects small error by moving first element of y_data to the end of the array
     nouvelle_y = np.roll(nouvelle_y, -1)
+
+    
+    if command == "add":
+        unique1 = (Time(new_start, scale='utc')).unix
+        unique2 = (Time(new_stop, scale='utc')).unix
+
+        print(unique1)
+        print(unique2)
+
+
+        nouvelle_x = np.append(nouvelle_x, unique1)
+        nouvelle_x = np.append(nouvelle_x, unique1)
+        nouvelle_x = np.append(nouvelle_x, unique2)
+        nouvelle_x = np.append(nouvelle_x, unique2)
+        nouvelle_x.sort()
+
+        result1 = np.where(nouvelle_x == unique1)
+        result2 = np.where(nouvelle_x == unique2)
+    
+
+        
+        nouvelle_y = np.insert(nouvelle_y, result1[0][0], 0)
+        nouvelle_y = np.insert(nouvelle_y, result1[0][1], float(fom))
+        nouvelle_y = np.insert(nouvelle_y, result2[0][0], float(fom))
+        nouvelle_y = np.insert(nouvelle_y, result2[0][1], 0)
+
 
     # Creates a tplot variable for data
     pytplot.store_data('FOM', data={'x':nouvelle_x, 'y':nouvelle_y})
@@ -115,13 +142,15 @@ def abs_display(user_start, user_end, folder):
 
 
 
-
 # User-input for abs files through command prompt:
 vars = input('Select command: ')
 eval(vars)
 
+# CURRENT PROBLEM: X-Values in new input (with addition) is doubling (only two per start/stop should be present, but now there is 4 per start/stop)
+
 # sample data for testing
-# abs_display("2022-07-25 08:00:00", "2022-07-28 16:00:00", "2022")
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022")
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "add", "2022-09-05 20:00:00", "2022-09-05 20:10:00", "5.06")
 
 # Create a command-line prompt to ask user: operation, trange (start and end), fom (height)
 # Create a fucntion that can add a bar (given a specified time range)
