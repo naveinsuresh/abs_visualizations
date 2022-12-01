@@ -116,7 +116,6 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
         nouvelle_x = np.append(nouvelle_x, unique1)
         nouvelle_x = np.append(nouvelle_x, unique2)
         nouvelle_x = np.append(nouvelle_x, unique2)
-        nouvelle_x.sort()
 
         result1 = np.where(nouvelle_x == unique1)
         result2 = np.where(nouvelle_x == unique2)
@@ -141,10 +140,6 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
     return tplot(["FOM"])
 
 
-
-# User-input for abs files through command prompt:
-vars = input('Select command: ')
-eval(vars)
 
 # CURRENT PROBLEM: X-Values in new input (with addition) is doubling (only two per start/stop should be present, but now there is 4 per start/stop)
 
