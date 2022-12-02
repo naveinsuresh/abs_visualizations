@@ -103,7 +103,7 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
     # Corrects small error by moving first element of y_data to the end of the array
     nouvelle_y = np.roll(nouvelle_y, -1)
 
-    
+    # ADD feature implementation
     if command == "add":
         unique1 = (Time(new_start, scale='utc')).unix
         unique2 = (Time(new_stop, scale='utc')).unix
@@ -127,6 +127,18 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
         nouvelle_y = np.insert(nouvelle_y, result2[0][0], float(fom))
         nouvelle_y = np.insert(nouvelle_y, result2[0][1], 0)
 
+    # DELETE Feature Implementation
+    if command == "delete":
+        unique1 = (Time(new_start, scale='utc')).unix
+        unique2 = (Time(new_stop, scale='utc')).unix
+
+        for m in nouvelle_x:
+            if unique1 <= m <= unique2:
+                index = np.argwhere(nouvelle_x == m)
+                nouvelle_x = np.delete(nouvelle_x, index)
+                nouvelle_y = np.delete(nouvelle_y, index)
+                
+
 
     # Creates a tplot variable for data
     pytplot.store_data('FOM', data={'x':nouvelle_x, 'y':nouvelle_y})
@@ -141,12 +153,9 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
 
 
-# CURRENT PROBLEM: X-Values in new input (with addition) is doubling (only two per start/stop should be present, but now there is 4 per start/stop)
+# CURRENT PROBLEM: Figure out exact issue with sort (if it even is needed in the first place?)
 
 # sample data for testing
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022")
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "add", "2022-09-05 20:00:00", "2022-09-05 20:10:00", "5.06")
-
-# Create a command-line prompt to ask user: operation, trange (start and end), fom (height)
-# Create a fucntion that can add a bar (given a specified time range)
-# Create a function that can delete a bar (given a specified time range)
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "delete", "2022-09-05 16:50:10", "2022-09-05 17:45:09")
