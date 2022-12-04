@@ -137,6 +137,29 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
                 index = np.argwhere(nouvelle_x == m)
                 nouvelle_x = np.delete(nouvelle_x, index)
                 nouvelle_y = np.delete(nouvelle_y, index)
+
+    # EDIT Feature Implementation
+    if command  == "edit":
+        unique1 = (Time(new_start, scale='utc')).unix
+        unique2 = (Time(new_stop, scale='utc')).unix
+
+        for h in nouvelle_x:
+            if unique1 <= h <= unique2:
+                index = np.argwhere(nouvelle_x == h)
+
+        print(index)
+        nouvelle_x = np.delete(nouvelle_x, index) 
+        nouvelle_x = np.insert(nouvelle_x, index[0], unique1)
+        nouvelle_x = np.insert(nouvelle_x, index[1], unique1)
+        nouvelle_x = np.insert(nouvelle_x, index[2], unique2)
+        nouvelle_x = np.insert(nouvelle_x, index[3], unique2)
+
+        
+                
+
+
+        # if user wants to edit trange, the user must enter a new start and stop time dpeending on original graph
+        # if user wants to edit "fom" value, the user must specifcy bpth teh desired start, stop, as well as a new "fom" value
                 
 
 
@@ -153,9 +176,17 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
 
 
-# CURRENT PROBLEM: Figure out exact issue with sort (if it even is needed in the first place?)
+# CURRENT PROBLEMS:
+# Make sure the original abs file is changed when a modification is applied by the user and is packaaged as a ".sav" file
+# Add a feature where the user can add comments for the entire data set (not individual data points) - "DISCUSSION TAG"
+# Should the user be allowed to add new segments which overlaps with existing segments?
+# Implement an EDIT function???
+
 
 # sample data for testing
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022")
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "add", "2022-09-05 20:00:00", "2022-09-05 20:10:00", "5.06")
-# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "delete", "2022-09-05 16:50:10", "2022-09-05 17:45:09")
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "delete", "2022-09-06 02:31:30", "2022-09-06 03:10:12")
+
+
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "edit", "2022-09-06 02:31:30", "2022-09-06 03:10:12")

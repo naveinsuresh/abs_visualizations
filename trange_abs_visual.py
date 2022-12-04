@@ -126,3 +126,4 @@ eval(vars)
 # Create a command-line prompt to ask user: operation, trange (start and end), fom (height)
 # Create a fucntion that can add a bar (given a specified time range)
 # Create a function that can delete a bar (given a specified time range)
+
