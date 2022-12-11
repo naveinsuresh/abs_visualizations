@@ -52,7 +52,7 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
         tai_format = 'gps' # use unix_tai or gps?
 
         t1 = Time('1958-01-01 00:00:00', scale='utc')
-        ut_t2 = Time('1970-01-01 00:00:08', scale='utc') # unix_tai'
+        ut_t2 = Time('1970-01-01 00:00:08', scale='utc') # unix_tai
         g_t2 = Time('1980-01-06 00:00:19', scale='utc') # gps
         if tai_format == 'unix_tai':
             delta = t1 - ut_t2
@@ -127,6 +127,57 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
         nouvelle_y = np.insert(nouvelle_y, result2[0][0], float(fom))
         nouvelle_y = np.insert(nouvelle_y, result2[0][1], 0)
 
+        # Insert FOM value, START, STOP, TIMESTAMP (subtract 10 seconds) into appropriate tags
+
+        revert1 = (Time(new_start, scale='utc', format='iso') - delta).tai
+        revert2 = (Time(new_stop, scale='utc', format='iso') - delta).tai
+        revert1.format = 'gps'
+        revert2.format = 'gps'
+
+
+        for file in os.listdir(folder):
+            stone = os.path.join(folder, file)
+            data = readsav(stone)
+            z = data["fomstr"]
+            values1 = z["TIMESTAMPS"][0]
+            values2 = z["FOM"][0]
+            values3 = z["START"][0]
+            values4 = z["STOP"][0]
+            values5 = z["NSEGS"]
+
+            if int(((revert1.value) - 10)) in values1:
+                position = np.argwhere(values1 == int(((revert1.value) - 10)))
+                values2 = np.append(values2, fom)
+                values2.sort
+                values3 = np.append(values3, position)
+                values3.sort
+                values5[0] += 1
+
+            if int(((revert2.value) - 10)) in values1:
+                position = np.argwhere(values1 == int(((revert2.value) - 10)))
+                values4 = np.append(values4, position)
+                values4.sort
+        
+        # Physically alter the tags in "readable" file with these updates tags
+
+            # Read in the file
+        with open(os.getcwd(file), 'r') as file:
+            filedata = file.read()
+
+            # Replace the target string
+        filedata = filedata.replace(fom_values, values2)
+
+            # Write the file out again
+        with open(os.getcwd(file), 'w') as file:
+            file.write(filedata)
+
+            # Convert new "readable" file back to ".sav" format
+
+
+
+            # Update initally selected abs.sav file with newly converted ".sav" file and store in "2022" folder (relative path)
+
+
     # DELETE Feature Implementation
     if command == "delete":
         unique1 = (Time(new_start, scale='utc')).unix
@@ -139,6 +190,10 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
                 nouvelle_y = np.delete(nouvelle_y, index)
 
     # EDIT Feature Implementation
+
+    # if user wants to edit trange, the user must enter a new start and stop time dpeending on original graph
+    # if user wants to edit "fom" value, the user must specifcy bpth teh desired start, stop, as well as a new "fom" value
+
     if command  == "edit":
         unique1 = (Time(new_start, scale='utc')).unix
         unique2 = (Time(new_stop, scale='utc')).unix
@@ -158,11 +213,6 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
                 
 
 
-        # if user wants to edit trange, the user must enter a new start and stop time dpeending on original graph
-        # if user wants to edit "fom" value, the user must specifcy bpth teh desired start, stop, as well as a new "fom" value
-                
-
-
     # Creates a tplot variable for data
     pytplot.store_data('FOM', data={'x':nouvelle_x, 'y':nouvelle_y})
     time, data = pytplot.get_data('FOM')
@@ -177,6 +227,7 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
 
 # CURRENT PROBLEMS:
+
 # Make sure the original abs file is changed when a modification is applied by the user and is packaaged as a ".sav" file
 # Add a feature where the user can add comments for the entire data set (not individual data points) - "DISCUSSION TAG"
 # Should the user be allowed to add new segments which overlaps with existing segments?
@@ -190,3 +241,5 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
 
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "edit", "2022-09-06 02:31:30", "2022-09-06 03:10:12")
+
+# 2022/abs_selections_2022-09-06-00-46-59.sav ---> FILE OF INTEREST
