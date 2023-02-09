@@ -5,30 +5,31 @@ import numpy as np
 from pytplot import tplot
 from scipy.io import readsav
 from astropy.time import Time
-import matplotlib.pyplot as plt
 
 
 # Single function that takes user's start time, stop time and folder of datasets as arguments
-def abs_display(user_start, user_end, folder, command = None, new_start = None, new_stop = None, fom = None):
+def abs_display(
+    user_start, user_end, folder, command=None, new_start=None, new_stop=None, fom=None
+):
 
-# Empty NumPy arrays outside of loop that are defined for later use
+    # Empty NumPy arrays outside of loop that are defined for later use
     mega_x_data = np.array([])
     mega_y_data = np.array([])
     nouvelle_x = np.array([])
     nouvelle_y = np.array([])
 
-# large for loop which cycles through each file inside "folder"
+    # large for loop which cycles through each file inside "folder"
     for file in os.listdir(folder):
         rock = os.path.join(folder, file)
 
-        # Opening the abs script file (binary to readable text)
+        # Opening the abs script file (binary --> readable text)
         sav_data = readsav(rock)
         a = sav_data["fomstr"]
 
-        start_times = a["START"][0] 
-        stop_times = a["STOP"][0] 
-        timestamp_values = a["TIMESTAMPS"][0] 
-        fom_values = a["FOM"][0] 
+        start_times = a["START"][0]
+        stop_times = a["STOP"][0]
+        timestamp_values = a["TIMESTAMPS"][0]
+        fom_values = a["FOM"][0]
 
         # Merges the the start_time and stop_values array into a single sorted array
         alpha = np.concatenate((start_times, stop_times))
@@ -40,21 +41,21 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
             gamma = np.array([timestamp_values[i]])
             beta = np.append(beta, gamma)
 
-        # Adds the required 10 second increment to EVERY OTHER timestamp_value 
+        # Adds the required 10 second increment to EVERY OTHER timestamp_value
         # Assigns timestamp_values to x_data variable
         beta[::2] += 10
         x_data = beta
-    
+
         # Assigns fom_values to y_data
         y_data = fom_values
 
         # Performs the conversion from TAI to UNIX/UTC
-        tai_format = 'gps' # use unix_tai or gps?
+        tai_format = "gps"  # use unix_tai or gps?
 
-        t1 = Time('1958-01-01 00:00:00', scale='utc')
-        ut_t2 = Time('1970-01-01 00:00:08', scale='utc') # unix_tai
-        g_t2 = Time('1980-01-06 00:00:19', scale='utc') # gps
-        if tai_format == 'unix_tai':
+        t1 = Time("1958-01-01 00:00:00", scale="utc")
+        ut_t2 = Time("1970-01-01 00:00:08", scale="utc")  # unix_tai
+        g_t2 = Time("1980-01-06 00:00:19", scale="utc")  # gps
+        if tai_format == "unix_tai":
             delta = t1 - ut_t2
         else:
             delta = t1 - g_t2
@@ -62,36 +63,36 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
         # Creates a new array of converted unix values for the x_data
         unix_x_data = np.array([])
         for tata in x_data:
-            converted = (Time(str(tata), scale='tai', format=tai_format)+delta).unix
+            converted = (Time(str(tata), scale="tai", format=tai_format) + delta).unix
             manga = np.array([converted])
             unix_x_data = np.append(unix_x_data, manga)
 
         # Previous unix_x_data is repeated 2x
-        up_unix_x_data = np.repeat(unix_x_data, 2) # x-axis
+        up_unix_x_data = np.repeat(unix_x_data, 2)  # x-axis
 
-        # Previous y_data array conntent is repeated 2x 
-        new_y_data = np.repeat(y_data, 2) 
-        
+        # Previous y_data array conntent is repeated 2x
+        new_y_data = np.repeat(y_data, 2)
+
         # inserts zeros in specific places to create "bar" type display
         i = 0
         while i < len(new_y_data):
             new_y_data = np.insert(new_y_data, i, 0)
             i += 3
-        
+
         i = 4
         while i < len(new_y_data):
             new_y_data = np.insert(new_y_data, i, 0)
             i += 4
 
-        up_new_y_data = np.append(new_y_data, 0) # y-axis
+        up_new_y_data = np.append(new_y_data, 0)  # y-axis
 
         # Combines all the data across all files into two separate arrays, each for x and y
         mega_x_data = np.concatenate((mega_x_data, up_unix_x_data))
         mega_y_data = np.concatenate((mega_y_data, up_new_y_data))
 
     # Converts the user's start and stop values to the "UTC" format
-    change1 = (Time(user_start, scale='utc')).unix
-    change2 = (Time(user_end, scale='utc')).unix
+    change1 = (Time(user_start, scale="utc")).unix
+    change2 = (Time(user_end, scale="utc")).unix
 
     # Narrows down to the required data needed based on start/stop time constraints
     for k in mega_x_data:
@@ -99,18 +100,17 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
             nouvelle_x = np.append(nouvelle_x, k)
             value = np.where(mega_x_data == k)[0][0]
             nouvelle_y = np.append(nouvelle_y, mega_y_data[value])
-            
+
     # Corrects small error by moving first element of y_data to the end of the array
     nouvelle_y = np.roll(nouvelle_y, -1)
 
     # ADD feature implementation
     if command == "add":
-        unique1 = (Time(new_start, scale='utc')).unix
-        unique2 = (Time(new_stop, scale='utc')).unix
+        unique1 = (Time(new_start, scale="utc")).unix
+        unique2 = (Time(new_stop, scale="utc")).unix
 
         print(unique1)
         print(unique2)
-
 
         nouvelle_x = np.append(nouvelle_x, unique1)
         nouvelle_x = np.append(nouvelle_x, unique1)
@@ -119,9 +119,7 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
         result1 = np.where(nouvelle_x == unique1)
         result2 = np.where(nouvelle_x == unique2)
-    
 
-        
         nouvelle_y = np.insert(nouvelle_y, result1[0][0], 0)
         nouvelle_y = np.insert(nouvelle_y, result1[0][1], float(fom))
         nouvelle_y = np.insert(nouvelle_y, result2[0][0], float(fom))
@@ -129,11 +127,10 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
         # Insert FOM value, START, STOP, TIMESTAMP (subtract 10 seconds) into appropriate tags
 
-        revert1 = (Time(new_start, scale='utc', format='iso') - delta).tai
-        revert2 = (Time(new_stop, scale='utc', format='iso') - delta).tai
-        revert1.format = 'gps'
-        revert2.format = 'gps'
-
+        revert1 = (Time(new_start, scale="utc", format="iso") - delta).tai
+        revert2 = (Time(new_stop, scale="utc", format="iso") - delta).tai
+        revert1.format = "gps"
+        revert2.format = "gps"
 
         for file in os.listdir(folder):
             stone = os.path.join(folder, file)
@@ -157,31 +154,26 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
                 position = np.argwhere(values1 == int(((revert2.value) - 10)))
                 values4 = np.append(values4, position)
                 values4.sort
-        
-        # Physically alter the tags in "readable" file with these updates tags
 
-            # Read in the file
-        with open(os.getcwd(file), 'r') as file:
-            filedata = file.read()
+        # Testing for Comparison:
 
-            # Replace the target string
-        filedata = filedata.replace(fom_values, values2)
+        print(values1)
 
-            # Write the file out again
-        with open(os.getcwd(file), 'w') as file:
-            file.write(filedata)
+        print(values2)
 
-            # Convert new "readable" file back to ".sav" format
+        print(values3)
 
+        print(values4)
 
+        print(values5)
 
-            # Update initally selected abs.sav file with newly converted ".sav" file and store in "2022" folder (relative path)
-
+        # Convert new "readable" file back to ".sav" format -- > update the entire recarray
+        # Update initally selected abs.sav file with newly converted ".sav" file and store in "2022" folder (relative path)
 
     # DELETE Feature Implementation
     if command == "delete":
-        unique1 = (Time(new_start, scale='utc')).unix
-        unique2 = (Time(new_stop, scale='utc')).unix
+        unique1 = (Time(new_start, scale="utc")).unix
+        unique2 = (Time(new_stop, scale="utc")).unix
 
         for m in nouvelle_x:
             if unique1 <= m <= unique2:
@@ -189,33 +181,62 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
                 nouvelle_x = np.delete(nouvelle_x, index)
                 nouvelle_y = np.delete(nouvelle_y, index)
 
+        revert1 = (Time(new_start, scale="utc", format="iso") - delta).tai
+        revert2 = (Time(new_stop, scale="utc", format="iso") - delta).tai
+        revert1.format = "gps"
+        revert2.format = "gps"
+
+        for file in os.listdir(folder):
+            stone = os.path.join(folder, file)
+            data = readsav(stone)
+            z = data["fomstr"]
+            values1 = z["TIMESTAMPS"][0]
+            values2 = z["FOM"][0]
+            values3 = z["START"][0]
+            values4 = z["STOP"][0]
+            values5 = z["NSEGS"]
+
+            # Pre-liminary Implementation:
+            for num in values1:
+                if int(((revert1.value) - 10)) <= num <= int(((revert2.value) - 10)):
+                    for i in values3:
+                        if values3[i] == np.argwhere(values1 == num):
+                            values3 = np.delete(values3, np.argwhere(values1 == num))
+                    for j in values4:
+                        if values4[j] == np.argwhere(values1 == num):
+                            values4 = np.delete(values4, np.argwhere(values1 == num))
+
+            values5[0] -= 1
+
+            # Convert start and stop times to TAI
+            # Loop through the TAI vlaues in between the range and identify teh indexes of the existing start and stop times
+            # Delete those indices form the corresponding tags
+            # reduce the NSEGS tag by 1
+            # Figure out someway to delete teh "fom" value
+
     # EDIT Feature Implementation
 
     # if user wants to edit trange, the user must enter a new start and stop time dpeending on original graph
     # if user wants to edit "fom" value, the user must specifcy bpth teh desired start, stop, as well as a new "fom" value
 
-    if command  == "edit":
-        unique1 = (Time(new_start, scale='utc')).unix
-        unique2 = (Time(new_stop, scale='utc')).unix
+    if command == "edit":
+        unique1 = (Time(new_start, scale="utc")).unix
+        unique2 = (Time(new_stop, scale="utc")).unix
 
         for h in nouvelle_x:
             if unique1 <= h <= unique2:
                 index = np.argwhere(nouvelle_x == h)
 
         print(index)
-        nouvelle_x = np.delete(nouvelle_x, index) 
+        nouvelle_x = np.delete(nouvelle_x, index)
         nouvelle_x = np.insert(nouvelle_x, index[0], unique1)
         nouvelle_x = np.insert(nouvelle_x, index[1], unique1)
         nouvelle_x = np.insert(nouvelle_x, index[2], unique2)
         nouvelle_x = np.insert(nouvelle_x, index[3], unique2)
 
-        
-                
-
-
     # Creates a tplot variable for data
-    pytplot.store_data('FOM', data={'x':nouvelle_x, 'y':nouvelle_y})
-    time, data = pytplot.get_data('FOM')
+    pytplot.store_data("FOM", data={"x": nouvelle_x, "y": nouvelle_y})
+    time, data = pytplot.get_data("FOM")
 
     # Prints the x_data & y_data arrays
     print(time)
@@ -223,7 +244,6 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
     # Displays the tplot graph:
     return tplot(["FOM"])
-
 
 
 # CURRENT PROBLEMS:
@@ -236,10 +256,10 @@ def abs_display(user_start, user_end, folder, command = None, new_start = None, 
 
 # sample data for testing
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022")
-# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "add", "2022-09-05 20:00:00", "2022-09-05 20:10:00", "5.06")
+# abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "add", "2022-09-05 20:00:04", "2022-09-05 20:10:04", "5.06")
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "delete", "2022-09-06 02:31:30", "2022-09-06 03:10:12")
-
-
 # abs_display("2022-09-05 08:00:00", "2022-09-07 16:00:00", "2022", "edit", "2022-09-06 02:31:30", "2022-09-06 03:10:12")
 
-# 2022/abs_selections_2022-09-06-00-46-59.sav ---> FILE OF INTEREST
+# File of Interest:
+# 2022/abs_selections_2022-09-06-00-46-59.sav
+

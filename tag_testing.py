@@ -93,4 +93,4 @@ dtype=[
 (('oldestavailableburstdata', 'OLDESTAVAILABLEBURSTDATA'), 'O'),
 (('metadataevaltime', 'METADATAEVALTIME'), 'O'),
 (('uplinkflag', 'UPLINKFLAG'), '>i4')
-])}
+])}m
